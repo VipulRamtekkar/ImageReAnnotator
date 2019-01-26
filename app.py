@@ -94,12 +94,12 @@ class HomeScreen(Screen):
 		self.GtImageSource = self.LoadGtDir + self.DataList[self.CurrentID][len(self.LoadDataDir):-3] + "png"
 		self.NowGtImage = "./temp/" + str(self.NowEdit) + ".png"
 		self.RootGtImage = self.NowGtImage[:-4]+"root.png"
-		self.img = cv2.imread(self.GtImageSource)
+		self.img = cv2.imread(self.GtImageSource,0)
 		self.RootImg = cv2.imread(self.GtImageSource)
-		self.img = np.vectorize(self.class_color.get, otypes=[np.float])(self.img)
-		lower = np.array([245,245,245])
-		upper = np.array([255,255,255])
-		mask = cv2.inRange(self.img,lower,upper)
+		#self.img = np.vectorize(self.class_color.get, otypes=[np.float])(self.img)
+		#lower = np.array([245,245,245])
+		#upper = np.array([255,255,255])
+		#mask = cv2.inRange(self.img,lower,upper)
 		_,self.contours,_ = cv2.findContours(self.img,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
 		cv2.drawContours(self.img,self.contours,-1,(0,0,255),2)
 		cv2.imwrite(self.NowGtImage,self.img)
