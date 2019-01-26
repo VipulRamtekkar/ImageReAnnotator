@@ -41,7 +41,7 @@ Instructions for Usage
 
 2. Correcting the annotation; at times some regions will be marked as lanes which are not visible in the image, click on them and that annotation will vanish. 
 ```
-If you incorrectly click on any lane that is present you can undo your action by clicking on the Undo
+If you incorrectly click on any lane that is present you can revert your action by clicking on the Undo
 ```
 
 3. The images that are correct go in the final_images folder and same for the labels which go to the final_labels folder
