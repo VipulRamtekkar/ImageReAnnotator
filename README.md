@@ -1,7 +1,7 @@
 # ImageViewer
 The GUI application will allow to view the images along with there ground truth so that the annotations can be modified easily.
 
-## Clone the Repository
+**Clone the Repository**
 
 Now clone the repository to your machine. Go to your terminal and the type:
 ```
