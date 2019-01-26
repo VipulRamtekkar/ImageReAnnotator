@@ -26,7 +26,7 @@ from shutil import copyfile, move
 import cv2
 import numpy as np
 from functools import partial
-
+#-------------------------------------------------------------------------------------------
 class ImageButton(ButtonBehavior, Image):
 	pass
 class HomeScreen(Screen):
@@ -38,11 +38,13 @@ class HomeScreen(Screen):
 		self.DefineButtonView()
 	
 	def LoadImageList(self):
+		self.image_length = 704                    #Enter the dimentions of the image
+		self.image_breadth =  1280
 		self.LoadDataDir = "./images/"
 		self.LoadGtDir = "./labels/"
 		self.SaveDataDir = "./final_images/"
 		self.SaveGtDir = "./final_labels/"
-		self.ensure_dir("./temp/")
+		self.ensure_dir("./.temp/")
 		folders = self.get_folders(self.LoadDataDir)
 		self.DataList = self.get_files(folders,".jpg")
 		# self.DataList = ([(self.LoadDataDir + i) for i in listdir(self.LoadDataDir) if (".jpg" in i)])
@@ -55,10 +57,10 @@ class HomeScreen(Screen):
 	
 	def DefineImageView(self):
 		#Position and dimention of the image and ground truth
-		self.DataW, self.DataH = 0.5, 2.0/3.0,
-		self.DataX, self.DataY = 0.25, 2.0/3.0,
-		self.GtW, self.GtH = 0.5, 2.0/3.0,
-		self.GtX, self.GtY = 0.75, 2.0/3.0,
+		self.DataW, self.DataH = 0.5, 2.0/3.0
+		self.DataX, self.DataY = 0.25, 2.0/3.0
+		self.GtW, self.GtH = 0.5, 2.0/3.0
+		self.GtX, self.GtY = 0.75, 2.0/3.0
 	
 	def DefineButtonView(self):
 		#Dimention and position of the buttons
@@ -69,30 +71,16 @@ class HomeScreen(Screen):
 		self.UndoW, self.UndoH = 0.24, 0.1
 		self.UndoX, self.UndoY = 0.875, 0.15
 	
-	def on_touch_down(self,touch):
-		#On mouse click 
-		x = int((touch.spos[0]-0.5)*(768*2))
-		y = int((1.0-touch.spos[1])*(576/(2.0/3.0)))
-		for contour in self.contours:
-			dist = cv2.pointPolygonTest(contour,(x,y),True)
-			if(dist>0):
-				print("in",dist)
-				cv2.fillPoly(self.img, pts =[contour], color=(0,0,0))
-				cv2.fillPoly(self.RootImg, pts =[contour], color=(0,0,0))
-				self.NowEdit += 1
-				self.NowGtImage = "./temp/" + str(self.NowEdit) + ".png"
-				self.RootGtImage = self.NowGtImage[:-4]+"root.png"
-				cv2.imwrite(self.NowGtImage, self.img)
-				cv2.imwrite(self.RootGtImage, self.RootImg)
-				self.GtImage.source = self.NowGtImage
-				self.GtImage.reload()
-		super(HomeScreen, self).on_touch_down(touch)
-	
 	def on_pre_enter(self):
 		self.clear_widgets()
+		if self.CurrentID > (len(self.DataList)-1):
+			print ("All Done :)")
+			App.get_running_app().stop()
+			return 0
+
 		self.DataImageSource = self.DataList[self.CurrentID]
-		self.GtImageSource = self.LoadGtDir + self.DataList[self.CurrentID][len(self.LoadDataDir):-3] + "png"
-		self.NowGtImage = "./temp/" + str(self.NowEdit) + ".png"
+		self.GtImageSource = self.LoadGtDir + self.DataList[self.CurrentID][len(self.LoadDataDir):-3] + "png" #Did not understand
+		self.NowGtImage = "./.temp/" + str(self.NowEdit) + ".png"
 		self.RootGtImage = self.NowGtImage[:-4]+"root.png"
 		self.img = cv2.imread(self.GtImageSource,0)
 		self.RootImg = cv2.imread(self.GtImageSource)
@@ -100,8 +88,8 @@ class HomeScreen(Screen):
 		#lower = np.array([245,245,245])
 		#upper = np.array([255,255,255])
 		#mask = cv2.inRange(self.img,lower,upper)
-		_,self.contours,_ = cv2.findContours(self.img,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-		cv2.drawContours(self.img,self.contours,-1,(0,0,255),2)
+		_,self.contours,_ = cv2.findContours(self.img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+		cv2.drawContours(self.img,self.contours, -1, (0,255,0), 2)
 		cv2.imwrite(self.NowGtImage,self.img)
 		cv2.imwrite(self.RootGtImage,self.RootImg)
 		self.ShowWindow()
@@ -109,6 +97,27 @@ class HomeScreen(Screen):
 	def ShowWindow(self):
 		self.ShowImages()
 		self.ShowButtons()
+
+	def on_touch_down(self,touch):
+		#On mouse click 
+		x = int((touch.spos[0]-0.5)*(self.image_breadth*2))
+		y = int((1.0-touch.spos[1])*(self.image_length*(3.0/2.0)))
+		# The click is getting detected
+		# Check whether the contours are getting generated or not. 
+		for contour in self.contours:
+			dist = cv2.pointPolygonTest(contour,(x,y),True)
+			if(dist>=0):
+				cv2.fillPoly(self.img, pts =[contour], color=(0,0,0))
+				cv2.fillPoly(self.RootImg, pts =[contour], color=(0,0,0))
+				self.NowEdit += 1
+				self.NowGtImage = "./.temp/" + str(self.NowEdit) + ".png"
+				self.RootGtImage = self.NowGtImage[:-4]+"root.png"
+				cv2.imwrite(self.NowGtImage, self.img)
+				cv2.imwrite(self.RootGtImage, self.RootImg)
+				self.GtImage.source = self.NowGtImage
+				self.GtImage.reload()
+				self.ShowImages()
+		super(HomeScreen, self).on_touch_down(touch)	
 	
 	def ShowImages(self):
 		# To display the images for the tweaking purposes
@@ -133,12 +142,13 @@ class HomeScreen(Screen):
 	def MakeUndo(self,x=0,_="_"):
 		if(self.NowEdit>0):
 			self.NowEdit -= 1
-			self.NowGtImage = "./temp/" + str(self.NowEdit) + ".png"
+			self.NowGtImage = "./.temp/" + str(self.NowEdit) + ".png"
 			self.RootGtImage = self.NowGtImage[:-4]+"root.png"
 			self.img = cv2.imread(self.NowGtImage)
 			self.RootImg = cv2.imread(self.RootGtImage)
 			self.GtImage.source = self.NowGtImage
 			self.GtImage.reload()
+			self.on_pre_enter()
 	
 	def NextImage(self,ImageVal=False,_="_"):
 		#Moving to the next image
@@ -148,6 +158,10 @@ class HomeScreen(Screen):
 			self.ensure_dir(self.SaveGtDir + self.GtImageSource[len(self.LoadGtDir):])
 			move(self.DataImageSource,self.SaveDataDir + self.DataImageSource[len(self.LoadDataDir):])
 			move(self.RootGtImage,self.SaveGtDir + self.GtImageSource[len(self.LoadGtDir):])
+			#So that the next image can load successfully
+			self.NowEdit = 0
+			self.CurrentID += 1
+			self.on_pre_enter()
 		else:
 			remove(self.DataImageSource)
 			remove(self.GtImageSource)
