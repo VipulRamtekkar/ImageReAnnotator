@@ -26,6 +26,7 @@ from shutil import copyfile, move
 import cv2
 import numpy as np
 from functools import partial
+from kivy.core.window import Window
 #-------------------------------------------------------------------------------------------
 class ImageButton(ButtonBehavior, Image):
 	pass
@@ -38,8 +39,8 @@ class HomeScreen(Screen):
 		self.DefineButtonView()
 	
 	def LoadImageList(self):
-		self.image_length = 704                    #Enter the dimentions of the image
-		self.image_breadth =  1280
+		self.image_length = 576                  #Enter the dimentions of the image
+		self.image_breadth =  768
 		self.LoadDataDir = "./images/"
 		self.LoadGtDir = "./labels/"
 		self.SaveDataDir = "./final_images/"
@@ -77,18 +78,17 @@ class HomeScreen(Screen):
 			print ("All Done :)")
 			App.get_running_app().stop()
 			return 0
-
 		self.DataImageSource = self.DataList[self.CurrentID]
 		self.GtImageSource = self.LoadGtDir + self.DataList[self.CurrentID][len(self.LoadDataDir):-3] + "png" #Did not understand
 		self.NowGtImage = "./.temp/" + str(self.NowEdit) + ".png"
 		self.RootGtImage = self.NowGtImage[:-4]+"root.png"
-		self.img = cv2.imread(self.GtImageSource,0)
+		self.img = cv2.imread(self.GtImageSource)
 		self.RootImg = cv2.imread(self.GtImageSource)
-		#self.img = np.vectorize(self.class_color.get, otypes=[np.float])(self.img)
-		#lower = np.array([245,245,245])
-		#upper = np.array([255,255,255])
-		#mask = cv2.inRange(self.img,lower,upper)
-		_,self.contours,_ = cv2.findContours(self.img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+		self.img = np.vectorize(self.class_color.get, otypes=[np.float])(self.img)
+		lower = np.array([245,245,245])
+		upper = np.array([255,255,255])
+		mask = cv2.inRange(self.img,lower,upper)
+		_,self.contours,_ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
 		cv2.drawContours(self.img,self.contours, -1, (0,255,0), 2)
 		cv2.imwrite(self.NowGtImage,self.img)
 		cv2.imwrite(self.RootGtImage,self.RootImg)
@@ -107,8 +107,8 @@ class HomeScreen(Screen):
 		for contour in self.contours:
 			dist = cv2.pointPolygonTest(contour,(x,y),True)
 			if(dist>=0):
-				cv2.fillPoly(self.img, pts =[contour], color=(0,0,0))
-				cv2.fillPoly(self.RootImg, pts =[contour], color=(0,0,0))
+				cv2.fillPoly(self.img, pts =[contour], color=(1,1,1))
+				cv2.fillPoly(self.RootImg, pts =[contour], color=(1,1,1))
 				self.NowEdit += 1
 				self.NowGtImage = "./.temp/" + str(self.NowEdit) + ".png"
 				self.RootGtImage = self.NowGtImage[:-4]+"root.png"
@@ -195,6 +195,7 @@ class MainClass(App):
 	def build(self):
 		ScreenMan = ScreenManagerbuild()
 		ScreenMan.add_widget(HomeScreen(name='home_window'))
+		Window.size = (1920,1080)
 		return ScreenMan
 
 class ScreenManagerbuild(ScreenManager):
