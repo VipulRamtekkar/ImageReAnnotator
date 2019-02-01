@@ -1,4 +1,4 @@
-# ImageViewer
+# ImageReAnnotator
 The GUI application will allow to view the images along with there ground truth so that the annotations can be modified easily.
 
 A sample images and labels folder is provided in the repository. You can try on them first to see how the application works.
