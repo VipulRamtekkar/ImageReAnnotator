@@ -11,7 +11,7 @@ Now clone the repository to your machine. Go to your terminal and the type:
 git clone https://github.com/VipulRamtekkar/ImageReAnnotator
 ```
 ```
-cd ImageViewer
+cd ImageReAnnotator
 ```
 
 Paste the images file and labels file in the same folder.
