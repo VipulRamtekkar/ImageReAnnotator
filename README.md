@@ -8,7 +8,7 @@ Make sure to change the dimentions of the images in the python file in the LoadI
 
 Now clone the repository to your machine. Go to your terminal and the type:
 ```
-git clone https://github.com/VipulRamtekkar/ImageViewer
+git clone https://github.com/VipulRamtekkar/ImageReAnnotator
 ```
 ```
 cd ImageViewer
